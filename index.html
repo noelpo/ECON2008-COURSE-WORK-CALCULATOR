@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ECON2008 Grade Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f8f8;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      margin-top: 30px;
+      font-size: 1.1em;
+      color: #444;
+    }
+
+    .input-group {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 15px;
+      background: linear-gradient(to right, #89f7fe, #66a6ff);
+      border: none;
+      border-radius: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: bold;
+      color: black;
+    }
+
+    .result {
+      margin-top: 25px;
+      font-weight: bold;
+      color: #222;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .grade {
+      margin-top: 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>ECON2008 - Statistical Methods 1</h2>
+    <h3>Coursework & Final Exam Calculator</h3>
+
+    <h3>Quiz Scores (Top 4 of 5, each out of 10)</h3>
+    <div class="input-group" id="quizInputs">
+      <input type="number" min="0" max="10" placeholder="Quiz 1">
+      <input type="number" min="0" max="10" placeholder="Quiz 2">
+      <input type="number" min="0" max="10" placeholder="Quiz 3">
+      <input type="number" min="0" max="10" placeholder="Quiz 4">
+      <input type="number" min="0" max="10" placeholder="Quiz 5">
+    </div>
+
+    <h3>Midsemester Exam (out of 25)</h3>
+    <div class="input-group">
+      <input type="number" min="0" max="25" id="midsemInput" placeholder="Midsem">
+    </div>
+
+    <h3>Extra Credit (out of 5)</h3>
+    <div class="input-group">
+      <input type="number" min="0" max="5" id="extraInput" placeholder="Extra Credit">
+    </div>
+
+    <h3>DPS Score (out of 10)</h3>
+    <div class="input-group">
+      <input type="number" min="0" max="10" id="dpsInput" placeholder="DPS">
+    </div>
+
+    <h3>Final Exam Score (optional, out of 100)</h3>
+    <div class="input-group">
+      <input type="number" min="0" max="100" id="finalInput" placeholder="Final %">
+    </div>
+
+    <button onclick="calculate()">Calculate Final Grade</button>
+
+    <div class="result" id="courseworkOutput"></div>
+    <div class="result" id="finalRequiredOutput"></div>
+    <div class="result" id="totalGradeOutput"></div>
+    <div class="grade" id="letterGradeOutput"></div>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    function calculate() {
+      const quizzes = Array.from(document.querySelectorAll('#quizInputs input')).map(input => parseFloat(input.value));
+      const midsem = parseFloat(document.getElementById('midsemInput').value);
+      const extra = parseFloat(document.getElementById('extraInput').value);
+      const dps = parseFloat(document.getElementById('dpsInput').value);
+      const finalExam = parseFloat(document.getElementById('finalInput').value);
+
+      const errorMsg = document.getElementById('errorMsg');
+      const courseworkOutput = document.getElementById('courseworkOutput');
+      const finalRequiredOutput = document.getElementById('finalRequiredOutput');
+      const totalGradeOutput = document.getElementById('totalGradeOutput');
+      const letterGradeOutput = document.getElementById('letterGradeOutput');
+
+      errorMsg.textContent = '';
+      courseworkOutput.textContent = '';
+      finalRequiredOutput.textContent = '';
+      totalGradeOutput.textContent = '';
+      letterGradeOutput.textContent = '';
+
+      // Validation
+      for (let q of quizzes) {
+        if (isNaN(q) || q < 0 || q > 10) {
+          errorMsg.textContent = '❌ Quiz scores must be between 0 and 10.';
+          return;
+        }
+      }
+
+      if (isNaN(midsem) || midsem < 0 || midsem > 25) {
+        errorMsg.textContent = '❌ Midsemester must be 0–25.';
+        return;
+      }
+
+      if (isNaN(extra) || extra < 0 || extra > 5) {
+        errorMsg.textContent = '❌ Extra credit must be 0–5.';
+        return;
+      }
+
+      if (isNaN(dps) || dps < 0 || dps > 10) {
+        errorMsg.textContent = '❌ DPS must be 0–10.';
+        return;
+      }
+
+      if (!isNaN(finalExam) && (finalExam < 0 || finalExam > 100)) {
+        errorMsg.textContent = '❌ Final exam must be 0–100.';
+        return;
+      }
+
+      // Process quiz scores (top 4 out of 5)
+      const topFour = quizzes.sort((a, b) => b - a).slice(0, 4);
+      const quizTotal = topFour.reduce((a, b) => a + b, 0);
+      const quizPercent = (quizTotal / 40) * 5; // 5% total weight
+
+      // Midsemester + Extra Credit (capped at 25%)
+      let midsemTotal = midsem + extra;
+      if (midsemTotal > 25) midsemTotal = 25;
+      const midsemPercent = (midsemTotal / 25) * 25;
+
+      // DPS
+      const dpsPercent = (dps / 10) * 10;
+
+      const courseworkTotal = quizPercent + midsemPercent + dpsPercent;
+      courseworkOutput.textContent = `📘 Coursework Total: ${courseworkTotal.toFixed(2)}% / 40%`;
+
+      // Required to pass = 50
+      const requiredFinal = ((50 - courseworkTotal) / 60) * 100;
+
+      if (isNaN(finalExam)) {
+        if (courseworkTotal >= 50) {
+          finalRequiredOutput.textContent = `✅ You already passed the course with your coursework!`;
+        } else {
+          finalRequiredOutput.textContent = `📌 You need ${requiredFinal.toFixed(2)}% in the Final Exam to pass the course.`;
+        }
+      } else {
+        const finalPercent = (finalExam / 100) * 60;
+        let totalGrade = courseworkTotal + finalPercent;
+
+        // Cap total grade at 100
+        if (totalGrade > 100) totalGrade = 100;
+
+        totalGradeOutput.textContent = `🎯 Final Grade: ${totalGrade.toFixed(2)}%`;
+
+        // Letter grade
+        let grade = '';
+        if (totalGrade >= 90) grade = 'A+';
+        else if (totalGrade >= 80) grade = 'A';
+        else if (totalGrade >= 75) grade = 'A-';
+        else if (totalGrade >= 70) grade = 'B+';
+        else if (totalGrade >= 65) grade = 'B';
+        else if (totalGrade >= 60) grade = 'B-';
+        else if (totalGrade >= 50) grade = 'C';
+        else grade = 'F';
+
+        letterGradeOutput.textContent = `🎓 Final Letter Grade: ${grade}`;
+      }
+    }
+  </script>
+</body>
+</html>
+
+
