@@ -112,9 +112,9 @@
       <input type="number" min="0" max="10" id="dpsInput" placeholder="DPS">
     </div>
 
-    <h3>Final Exam Score (optional, out of 100)</h3>
+    <h3>Final Exam Score (optional, out of 60)</h3>
     <div class="input-group">
-      <input type="number" min="0" max="100" id="finalInput" placeholder="Final %">
+      <input type="number" min="0" max="60" id="finalInput" placeholder="Final /60">
     </div>
 
     <button onclick="calculate()">Calculate Final Grade</button>
@@ -169,17 +169,17 @@
         return;
       }
 
-      if (!isNaN(finalExam) && (finalExam < 0 || finalExam > 100)) {
-        errorMsg.textContent = '❌ Final exam must be 0–100.';
+      if (!isNaN(finalExam) && (finalExam < 0 || finalExam > 60)) {
+        errorMsg.textContent = '❌ Final exam must be 0–60.';
         return;
       }
 
-      // Process quiz scores (top 4 out of 5)
+      // Top 4 quizzes
       const topFour = quizzes.sort((a, b) => b - a).slice(0, 4);
       const quizTotal = topFour.reduce((a, b) => a + b, 0);
-      const quizPercent = (quizTotal / 40) * 5; // 5% total weight
+      const quizPercent = (quizTotal / 40) * 5; // 5% total
 
-      // Midsemester + Extra Credit (capped at 25%)
+      // Midsem + Extra (capped at 25%)
       let midsemTotal = midsem + extra;
       if (midsemTotal > 25) midsemTotal = 25;
       const midsemPercent = (midsemTotal / 25) * 25;
@@ -190,25 +190,21 @@
       const courseworkTotal = quizPercent + midsemPercent + dpsPercent;
       courseworkOutput.textContent = `📘 Coursework Total: ${courseworkTotal.toFixed(2)}% / 40%`;
 
-      // Required to pass = 50
-      const requiredFinal = ((50 - courseworkTotal) / 60) * 100;
+      const requiredFinal = 50 - courseworkTotal;
 
       if (isNaN(finalExam)) {
         if (courseworkTotal >= 50) {
           finalRequiredOutput.textContent = `✅ You already passed the course with your coursework!`;
         } else {
-          finalRequiredOutput.textContent = `📌 You need ${requiredFinal.toFixed(2)}% in the Final Exam to pass the course.`;
+          finalRequiredOutput.textContent = `📌 You need ${requiredFinal.toFixed(2)} out of 60 in the Final Exam to pass.`;
         }
       } else {
-        const finalPercent = (finalExam / 100) * 60;
+        const finalPercent = finalExam; // out of 60
         let totalGrade = courseworkTotal + finalPercent;
-
-        // Cap total grade at 100
         if (totalGrade > 100) totalGrade = 100;
 
         totalGradeOutput.textContent = `🎯 Final Grade: ${totalGrade.toFixed(2)}%`;
 
-        // Letter grade
         let grade = '';
         if (totalGrade >= 90) grade = 'A+';
         else if (totalGrade >= 80) grade = 'A';
@@ -225,5 +221,4 @@
   </script>
 </body>
 </html>
-
 
